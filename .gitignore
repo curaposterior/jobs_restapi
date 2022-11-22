@@ -1,0 +1,5 @@
+#ignore these files/directiories
+venv
+.env
+__pycache__
+.vscode
