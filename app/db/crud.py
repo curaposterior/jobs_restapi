@@ -41,4 +41,6 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
-#implement other functions
+#to do
+def get_employees(db: Session, skip: int = 0, limit: int = 50):
+    return db.query(models.Employee).offset(skip).limit(limit).all()
