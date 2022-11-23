@@ -16,7 +16,6 @@ class User(Base):
     api_key = Column(String)
     test_col = Column(Integer)
 
-#cos nie dziala z "sqlalchemy.exc.ArgumentError: Mapper mapped class Job->jobs could not assemble any primary key columns for mapped table 'jobs'"
 
 # class Company(Base):
 #     __tablename__ = 'company'
