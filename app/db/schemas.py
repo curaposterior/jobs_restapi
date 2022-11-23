@@ -1,23 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
 
-class UserBase(BaseModel):
+class UserIn(BaseModel):
     name: str
     surname: str
-
-
-class UserCreate(BaseModel):
-    password_hash: str
-    api_key: str
-
-
-class User(BaseModel):
-    id: int
     address: str
     username: str
+    password_hash: str
+    email: EmailStr
 
     class Config:
         orm_mode = True
+
+class UserOut(BaseModel):
+    name: str
+    surname: str
+    username: str
+    email: EmailStr
+
+    class Config:
+        orm_mode = True
+    
 
 
 class JobInformation(BaseModel):

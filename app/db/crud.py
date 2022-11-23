@@ -26,7 +26,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def create_user(db: Session, user: schemas.UserCreate):
+def create_user(db: Session, user: schemas.UserIn):
     hashed_password = get_password_hash(user.password_hash)
     fake_api_key="verystrongapikey" #implement method that generates api key
     db_user = models.User(name=user.name,
@@ -34,6 +34,7 @@ def create_user(db: Session, user: schemas.UserCreate):
                           address=user.address,
                           username=user.username,
                           password_hash=hashed_password,
+                          email=user.email,
                           api_key=fake_api_key
                           )
     db.add(db_user)

@@ -12,9 +12,9 @@ class User(Base):
     surname = Column(String, index=True)
     address = Column(String, index=True)
     username = Column(String, index=True)
+    email = Column(String, index=True)
     password_hash = Column(String)
     api_key = Column(String)
-    test_col = Column(Integer)
 
 
 class Company(Base):
