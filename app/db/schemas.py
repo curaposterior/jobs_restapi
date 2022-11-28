@@ -2,6 +2,13 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 
+class UserAuthenticate(BaseModel):
+    username: str
+    password: str
+
+    class Config:
+        orm_mode = True
+
 class UserIn(BaseModel):
     name: str
     surname: str

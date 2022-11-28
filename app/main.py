@@ -23,6 +23,21 @@ async def index():
     return {"information": "try different routes"}
 
 
+@app.post("/login")
+async def login(user: schemas.UserAuthenticate, db:Session = Depends(get_db)):
+    user_to_auth = crud.get_user_by_username(username=user.username)
+    
+    if not user_to_auth:
+        raise HTTPException(status_code=404, detail="Invalid credentials")
+    
+    if not crud.verify_password(plain_password=user.password, 
+                            hashed_password=user_to_auth.hashed_password):
+        raise HTTPException(status_code=404, detail="Invalid credentials")
+    
+    #create and return token
+    return {"information": "not implemented yet"}
+
+
 @app.post("/users/", response_model=schemas.UserOut)
 def create_user(user: schemas.UserIn, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, username=user.username)
