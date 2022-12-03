@@ -35,7 +35,7 @@ async def login(user: schemas.UserAuthenticate, db:Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invalid credentials")
     
     #create and return token
-    return {"information": "not implemented yet"}
+    return {"response": "not implemented yet"}
 
 
 @app.post("/users/", response_model=schemas.UserOut)
@@ -60,21 +60,39 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.put("/users/{user_id}/")
-def change_user(user_id: int, db: Session = Depends(get_db)):
+@app.put("/users/{user_id}/", response_model=schemas.UserOut)
+def change_user(user_id: int, user: schemas.UserChange, db: Session = Depends(get_db)):
     #implement authentication
     db_user = crud.get_user(db, user_id=user_id)
+    
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    
+    if (user.username and user.username != db_user.username and crud.get_user_by_username(db, username=user.username) != user.username):
+        db_user.username = user.username
+    else:
+        raise HTTPException(status_code=400, detail="try different username")
 
-    return None
+    if (user.name and user.name != db_user.name):
+        db_user.name = user.name
+    if (user.surname and user.surname != db_user.surname):
+        db_user.surname = user.surname
+    if (user.password and not crud.verify_password(user.password, db_user.password_hash)):
+        db_user.password_hash = crud.get_password_hash(user.password)
+    if (user.email and not crud.get_user_by_email(db, email=user.email)):
+        db_user.email = user.email
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 
 @app.delete("/users/{user_id}/")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
-    return None
+    db_user = crud.get_user(db=db, user_id=user_id)
+    db.query(models.User).filter(models.User.id == user_id).delete()
+    db.commit()
+    return {"response": "user deleted"}
 
 
 @app.get("/employees/", response_model=list[schemas.Employee])

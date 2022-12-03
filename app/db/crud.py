@@ -11,8 +11,12 @@ def get_users(db: Session, skip: int = 0, limit: int = 50):
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def get_user_by_username(db: Session, username: int):
+def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
+
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -27,13 +31,13 @@ def get_password_hash(password):
 
 
 def create_user(db: Session, user: schemas.UserIn):
-    hashed_password = get_password_hash(user.password_hash)
+    hashed_password = get_password_hash(user.password)
     fake_api_key="verystrongapikey" #implement method that generates api key
     db_user = models.User(name=user.name,
                           surname=user.surname,
                           address=user.address,
                           username=user.username,
-                          password_hash=hashed_password,
+                          password=hashed_password,
                           email=user.email,
                           api_key=fake_api_key
                           )

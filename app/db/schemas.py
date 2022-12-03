@@ -14,7 +14,7 @@ class UserIn(BaseModel):
     surname: str
     address: str
     username: str
-    password_hash: str
+    password: str
     email: EmailStr
 
     class Config:
