@@ -13,7 +13,7 @@ class User(Base):
     address = Column(String, index=True)
     username = Column(String, index=True)
     email = Column(String, index=True)
-    password_hash = Column(String)
+    password = Column(String)
     api_key = Column(String)
 
 

@@ -1,20 +1,14 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from db import crud, models, schemas
-from db.database import SessionLocal, engine
+from db.database import SessionLocal, engine, get_db
+import oauth2
 
 # models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 #routes
 
@@ -23,19 +17,20 @@ async def index():
     return {"information": "try different routes"}
 
 
-@app.post("/login")
+@app.post("/login", response_model=schemas.Token)
 async def login(user: schemas.UserAuthenticate, db:Session = Depends(get_db)):
-    user_to_auth = crud.get_user_by_username(username=user.username)
+    user_to_auth = crud.get_user_by_username(db=db, username=user.username)
     
     if not user_to_auth:
         raise HTTPException(status_code=404, detail="Invalid credentials")
     
     if not crud.verify_password(plain_password=user.password, 
-                            hashed_password=user_to_auth.hashed_password):
-        raise HTTPException(status_code=404, detail="Invalid credentials")
+                            hashed_password=user_to_auth.password):
+        raise HTTPException(status_code=403, detail="Invalid credentials")
     
-    #create and return token
-    return {"response": "not implemented yet"}
+    access_token = oauth2.create_access_token(data={"username": user.username})
+    
+    return {"access_token": access_token, "token_type": "bearer"} 
 
 
 @app.post("/users/", response_model=schemas.UserOut)
@@ -88,8 +83,16 @@ def change_user(user_id: int, user: schemas.UserChange, db: Session = Depends(ge
 
 
 @app.delete("/users/{user_id}/")
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
     db_user = crud.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    session_user = crud.get_user_by_username(db=db, username=current_user.username)
+
+    if (db_user.id != session_user.id):
+        raise HTTPException(status_code=403, detail="Not authorized to perform requested action")
+
     db.query(models.User).filter(models.User.id == user_id).delete()
     db.commit()
     return {"response": "user deleted"}
@@ -119,5 +122,3 @@ def get_job(job_id: int, db: Session = Depends(get_db)):
 @app.get("/jobs/{job_id}/")
 def show_job(job_id: int, db: Session = Depends(get_db)):
     return None
-
-#maybe a route @app.post('token')
