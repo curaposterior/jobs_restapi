@@ -6,7 +6,7 @@ from db import crud, models, schemas
 from db.database import SessionLocal, engine, get_db
 import oauth2
 
-# models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -33,7 +33,7 @@ async def login(user: schemas.UserAuthenticate, db:Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"} 
 
 
-@app.post("/users/", response_model=schemas.UserOut)
+@app.post("/users/", status_code=201, response_model=schemas.UserOut)
 def create_user(user: schemas.UserIn, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, username=user.username)
     if db_user:
@@ -56,34 +56,26 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/users/{user_id}/", response_model=schemas.UserOut)
-def change_user(user_id: int, user: schemas.UserChange, db: Session = Depends(get_db)):
-    #implement authentication
-    db_user = crud.get_user(db, user_id=user_id)
+async def change_user(user_id: int, user: schemas.UserChange, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
     
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+    query_user = db.query(models.User).filter(models.User.id == user_id)
+    db_user = query_user.first()
+
+    if db_user == None:
+        raise HTTPException(status_code=404, detail=f"User with ID={user_id} doesn't exist.")
+
+    if db_user.username != current_user.username:
+        raise HTTPException(status_code=403, detail="Unauthorized to perform this action.")
     
-    if (user.username and user.username != db_user.username and crud.get_user_by_username(db, username=user.username) != user.username):
-        db_user.username = user.username
-    else:
-        raise HTTPException(status_code=400, detail="try different username")
-
-    if (user.name and user.name != db_user.name):
-        db_user.name = user.name
-    if (user.surname and user.surname != db_user.surname):
-        db_user.surname = user.surname
-    if (user.password and not crud.verify_password(user.password, db_user.password_hash)):
-        db_user.password_hash = crud.get_password_hash(user.password)
-    if (user.email and not crud.get_user_by_email(db, email=user.email)):
-        db_user.email = user.email
-
+    
+    query_user.update(user.dict(), synchronize_session=False)
     db.commit()
-    db.refresh(db_user)
-    return db_user
+
+    return query_user.first()
 
 
 @app.delete("/users/{user_id}/")
-def delete_user(user_id: int, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
+async def delete_user(user_id: int, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
     db_user = crud.get_user(db=db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -95,7 +87,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db), current_user: str =
 
     db.query(models.User).filter(models.User.id == user_id).delete()
     db.commit()
-    return {"response": "user deleted"}
+    return {"response": "user deleted"} #change this to better response
 
 
 @app.get("/employees/", response_model=list[schemas.Employee])

@@ -30,22 +30,21 @@ class UserIn(BaseModel):
         orm_mode = True
 
 class UserOut(BaseModel):
+    id: int
+    username: str
     name: str
     surname: str
-    username: str
     email: EmailStr
 
     class Config:
         orm_mode = True
-    
+
 
 class UserChange(BaseModel):
-    name: Optional[str]
-    surname: Optional[str]
-    address: Optional[str]
-    username: Optional[str]
-    password: Optional[str]
-    email: Optional[EmailStr]
+    username: str
+    name: str
+    surname: str
+    email: EmailStr
 
     class Config:
         orm_mode = True
