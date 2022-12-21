@@ -2,11 +2,10 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from db import crud, models, schemas
-from db.database import SessionLocal, engine, get_db
-import oauth2
+from app.db import crud, models, schemas
+from app.db.database import SessionLocal, engine, get_db
+import app.oauth2 as oauth2
 
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
