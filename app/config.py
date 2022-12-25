@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     database_port: str
     database_db: str
     database_engine: str
+    database_alembic_host: str
 
     secret_key: str
     algorithm: str

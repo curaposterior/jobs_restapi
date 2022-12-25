@@ -13,7 +13,7 @@ from app.config import settings
 config = context.config
 config.set_main_option(
         "sqlalchemy.url", 
-        f"{settings.database_engine}://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_db}"
+        f"{settings.database_engine}://{settings.database_username}:{settings.database_password}@{settings.database_alembic_host}:{settings.database_port}/{settings.database_db}"
     )
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

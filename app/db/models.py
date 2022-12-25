@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
 from sqlalchemy.orm import relationship
-
+import datetime
 from .database import Base
 
 
@@ -8,46 +8,88 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    surname = Column(String, index=True)
-    address = Column(String, index=True)
+    name = Column(String)
+    surname = Column(String)
+    address = Column(String)
     username = Column(String, index=True)
     email = Column(String, index=True)
-    password = Column(String)
-    api_key = Column(String)
+    password = Column(String, index=True)
+    # api_key = Column(String) # used for monitoring usage
+    is_active = Column(Boolean)
+
+
+class Employee(Base):
+    __tablename__ = 'employee_profile'
+
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
+    salary = Column(Integer)
+    currency = Column(String)
+
+
+class Skill(Base):
+    __tablename__ = 'skill'
+
+    id = Column(Integer, primary_key=True, index=True)
+    skill_name = Column(String)
+
+
+class EmployeeSkill(Base):
+    __tablename__ = 'employee_skills'
+
+    user_id = Column(Integer, ForeignKey("employee_profile.user_id"), primary_key=True, index=True)
+    skill_id = Column(Integer, ForeignKey("skill.id"), primary_key=True, index=True)
+    skill_level = Column(Integer)
 
 
 class Company(Base):
     __tablename__ = 'company'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
-    field = Column(String, index=True)
+    company_name = Column(String)
+    company_description = Column(String)
+    establishment_date = Column(Date)
+    website = Column(String)
+
+
+class JobLocation(Base):
+    __tablename__ = 'job_location'
+
+    id = Column(Integer, primary_key=True, index=True)
+    address = Column(String)
+    city = Column(String)
+    country = Column(String)
+    postcode = Column(String)
+
+
+class JobType(Base):
+    __tablename__ = 'job_type'
     
-    contractors = relationship("Employee", back_populates="companies")
+    id = Column(Integer, primary_key=True, index=True)
+    job_type = Column(String)
 
-class Employee(Base):
-    __tablename__ = 'employee'
+
+class JobPost(Base):
+    __tablename__ = 'job_post'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    company_id = Column(Integer, ForeignKey("company.id"))
-    companies = relationship("Company", back_populates="contractors")
+    posted_by_id = Column(Integer, ForeignKey("company.id"), index=True)
+    job_type_id = Column(Integer, ForeignKey("job_type.id"), index=True)
+    job_location_id = Column(Integer, ForeignKey("job_location.id"), index=True)
+    job_description = Column(String)
+    created_date = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
+    is_active = Column(Boolean)
 
 
-class JobInformation(Base):
-    __tablename__ = 'jobs_information'
 
-    id = Column(Integer, primary_key=True, index=True)
-    job_description = Column(String, index=True)
-    skills = Column(String, index=True)
+class JobSkill(Base):
+    __tablename__ = 'job_post_skill'
+
+    skill_id = Column(Integer, ForeignKey("skill.id"), primary_key=True, index=True)
+    job_post_id = Column(Integer, ForeignKey("job_post.id"), primary_key=True, index=True)
+    skill_level = Column(Integer)
 
 
-class Job(Base):
-    __tablename__ = 'jobs'
+# class JobPostActivity(Base):
+#     __tablename__ = 'job_post_activity'
 
-    id = Column(Integer, primary_key=True, index=True)
-    job_id = Column(Integer, ForeignKey("jobs_information.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))
-    completed = Column(Boolean, default=False)    
 
