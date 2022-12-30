@@ -12,9 +12,8 @@ class User(Base):
     surname = Column(String)
     address = Column(String)
     username = Column(String, index=True)
-    email = Column(String, index=True)
+    email = Column(String, index=True, unique=True)
     password = Column(String, index=True)
-    # api_key = Column(String) # used for monitoring usage
     is_active = Column(Boolean)
 
 
@@ -22,6 +21,7 @@ class Employee(Base):
     __tablename__ = 'employee_profile'
 
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
+    company = Column(String, ForeignKey("company.company_name"), index=True)
     salary = Column(Integer)
     currency = Column(String)
 
@@ -45,7 +45,7 @@ class Company(Base):
     __tablename__ = 'company'
 
     id = Column(Integer, primary_key=True, index=True)
-    company_name = Column(String)
+    company_name = Column(String, unique=True)
     company_description = Column(String)
     establishment_date = Column(Date)
     website = Column(String)

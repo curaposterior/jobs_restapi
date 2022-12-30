@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from . import models, schemas
 from passlib.context import CryptContext
-
+from psycopg2.errors import UniqueViolation
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -32,16 +33,44 @@ def get_password_hash(password):
 
 def create_user(db: Session, user: schemas.UserIn):
     hashed_password = get_password_hash(user.password)
-    fake_api_key="verystrongapikey" #implement method that generates api key
     db_user = models.User(name=user.name,
                           surname=user.surname,
                           address=user.address,
                           username=user.username,
                           password=hashed_password,
                           email=user.email,
-                          api_key=fake_api_key
+                          is_active=True
                           )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    #check if company is valid
+
+    profile = models.Employee(user_id = db_user.id,
+        salary = 0,
+        currency = "PLN",
+        company = user.company
+    )
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+
     return db_user
+
+
+def create_company(db: Session, company: schemas.CompanyCreate):
+    new_company = models.Company(company_name=company.company_name,
+                                 company_description=company.company_description,
+                                 establishment_date=company.establishment_date,
+                                 website=company.website
+                                 )
+    db.add(new_company)
+    db.commit()
+    db.refresh(new_company)
+    return new_company
+
+
+def count_company_employees(db: Session):
+    return db.query(models.Employee.company, func.count(models.Employee.user_id)).group_by(models.Employee.company)
+ 

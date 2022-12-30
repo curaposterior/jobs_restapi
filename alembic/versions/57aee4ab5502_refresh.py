@@ -1,8 +1,8 @@
-"""create all tables
+"""refresh
 
-Revision ID: 69f93f978a96
+Revision ID: 57aee4ab5502
 Revises: 
-Create Date: 2022-12-25 13:57:50.656552
+Create Date: 2022-12-29 18:27:46.363306
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '69f93f978a96'
+revision = '57aee4ab5502'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -59,7 +59,7 @@ def upgrade() -> None:
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=False)
+    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
     op.create_index(op.f('ix_users_password'), 'users', ['password'], unique=False)
     op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=False)

@@ -6,6 +6,7 @@ from app.db import crud, models, schemas
 from app.db.database import SessionLocal, engine, get_db
 import app.oauth2 as oauth2
 
+from sqlalchemy.exc import IntegrityError
 
 app = FastAPI()
 
@@ -36,9 +37,11 @@ async def login(user: schemas.UserAuthenticate, db:Session = Depends(get_db)):
 def create_user(user: schemas.UserIn, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, username=user.username)
     if db_user:
-        raise HTTPException(status_code=400, detail="username already registered")
-    return crud.create_user(db=db, user=user)
-
+        raise HTTPException(status_code=400, detail="try different username")
+    try:
+        return crud.create_user(db=db, user=user)
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="try different email")
 
 @app.get("/users/", response_model=list[schemas.UserOut])
 def read_users(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
@@ -89,27 +92,51 @@ async def delete_user(user_id: int, db: Session = Depends(get_db), current_user:
     return {"response": "user deleted"} #change this to better response
 
 
-@app.get("/employees/", response_model=list[schemas.Employee])
-def read_employees(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
-    employees = []
-    return employees
+@app.post("/company/", response_model=schemas.CompanyCreate)
+def create_company(company: schemas.CompanyCreate, db: Session =  Depends(get_db)):
+    db_company = db.query(models.Company).filter(models.Company.company_name == company.company_name).first()
+
+    if db_company is not None:
+        raise HTTPException(status_code=403, detail=f"Company with name '{company.company_name}' is already registered")
+
+    new = crud.create_company(db=db, company=company)
+    return new
 
 
-@app.post("/employees/")
-def create_employee():
-    return None
+@app.get("/company/employees")
+def count_employees(db: Session = Depends(get_db)):
+    return crud.count_company_employees(db=db)
 
 
-@app.get("/jobs/")
-def list_jobs(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
-    return None
+@app.get("/employee/{employee_id}", response_model=schemas.EmployeeProfile)
+def get_profile(employee_id: int, db: Session = Depends(get_db)):
+    user = crud.get_user(db=db, user_id=employee_id)
+    employee = db.query(models.Employee).filter(models.Employee.user_id == employee_id).first()
+    response = {
+        "name": user.name,
+        "surname": user.surname,
+        "email": user.email,
+        "salary": employee.salary,
+        "company": employee.company
+    }
+    return response
 
 
-@app.post("/jobs/{job_id}/")
-def get_job(job_id: int, db: Session = Depends(get_db)):
-    return None
+@app.get("/jobs/") #list avaliable jobs based on user data, funkcja biznesowa 1
+def list_jobs():
+    return {}
 
 
-@app.get("/jobs/{job_id}/")
-def show_job(job_id: int, db: Session = Depends(get_db)):
-    return None
+@app.post("/jobs/{job_id}") #funkcja biznesowa 2, musi sprawdzic duzo rzeczy
+def take_jobs(job_id: int):
+    return {}
+
+
+@app.get("/jobs/{username}/")
+def list_taken_jobs(username: str):
+    return {}
+
+
+@app.post("/jobs/complete/")
+def finish_job():
+    return {}

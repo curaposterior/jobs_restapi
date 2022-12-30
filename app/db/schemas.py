@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-
+import datetime
 
 class Token(BaseModel):
     access_token: str
@@ -25,6 +25,7 @@ class UserIn(BaseModel):
     username: str
     password: str
     email: EmailStr
+    company: str
 
     class Config:
         orm_mode = True
@@ -50,29 +51,32 @@ class UserChange(BaseModel):
         orm_mode = True
 
 
-class JobInformation(BaseModel):
-    id: int
-    job_description: str
-    skills: str
+class CompanyCreate(BaseModel):
+    company_name: str
+    company_description: str
+    establishment_date: datetime.date
+    website: str
+
+    class Config:
+        orm_mode = True
 
 
-class Job(BaseModel):
-    job_id: int
+class CreateEmployee(BaseModel):
     user_id: int
-    completed: bool
+    salary: int
+    currency: str
+    company: str
+
+    class Config: #why is that necessary?
+        orm_mode = True
 
 
-class Employee(BaseModel):
-    user_id: int
-    company_id: int
-
-
-class Company(BaseModel):
-    id: int
+class EmployeeProfile(BaseModel):
     name: str
-    field: str
-
-    contractors: list[Employee] = []
+    surname: str
+    email: EmailStr
+    salary: int
+    company: str
 
     class Config:
         orm_mode = True
