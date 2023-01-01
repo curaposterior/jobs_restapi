@@ -51,6 +51,13 @@ class Company(Base):
     website = Column(String)
 
 
+class ApiKey(Base):
+    __tablename__ = 'api_keys'
+
+    company_id = Column(Integer, ForeignKey("company.id"), primary_key=True, index=True)
+    api_key = Column(String(length=64), unique=True, index=True)
+
+
 class JobLocation(Base):
     __tablename__ = 'job_location'
 

@@ -11,6 +11,10 @@ class TokenData(BaseModel):
     username: str | None = None
 
 
+class TokenDataCompany(BaseModel):
+    company_name: str | None = None
+
+
 class UserAuthenticate(BaseModel):
     username: str
     password: str
@@ -77,6 +81,30 @@ class EmployeeProfile(BaseModel):
     email: EmailStr
     salary: int
     company: str
+
+    class Config:
+        orm_mode = True
+
+
+class CreateJob(BaseModel):
+    company_name: str
+    job_type_id: int
+    address: str
+    city: str
+    country: str
+    postcode: str
+    job_description: str
+    skill_id: int
+    skill_level: int
+
+    class Config:
+        orm_mode = True
+
+
+class JobPostOut(BaseModel):
+    id: int
+    created_date: datetime.date
+    is_active: bool
 
     class Config:
         orm_mode = True

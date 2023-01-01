@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Security
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -14,10 +14,10 @@ app = FastAPI()
 
 @app.get("/")
 async def index():
-    return {"information": "try different routes"}
+    return {"response": "try different routes"}
 
 
-@app.post("/login", response_model=schemas.Token)
+@app.post("/users/login", response_model=schemas.Token)
 async def login(user: schemas.UserAuthenticate, db:Session = Depends(get_db)):
     user_to_auth = crud.get_user_by_username(db=db, username=user.username)
     
@@ -33,6 +33,16 @@ async def login(user: schemas.UserAuthenticate, db:Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"} 
 
 
+# @app.post("/company/login", response_model=schemas.Token)
+# async def login_company(company: schemas.CompanyAuthenticate, db: Session = Depends(get_db)):
+#     company_to_auth = db.query(models.Company).filter(models.Company.company_name == company.company_name).first()
+
+#     if not company_to_auth:
+#         raise HTTPException(status_code=404, detail="Invalid credentials")
+    
+#     # if not crud.#
+
+
 @app.post("/users/", status_code=201, response_model=schemas.UserOut)
 def create_user(user: schemas.UserIn, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, username=user.username)
@@ -42,6 +52,7 @@ def create_user(user: schemas.UserIn, db: Session = Depends(get_db)):
         return crud.create_user(db=db, user=user)
     except IntegrityError:
         raise HTTPException(status_code=400, detail="try different email")
+
 
 @app.get("/users/", response_model=list[schemas.UserOut])
 def read_users(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
@@ -122,8 +133,56 @@ def get_profile(employee_id: int, db: Session = Depends(get_db)):
     return response
 
 
-@app.get("/jobs/") #list avaliable jobs based on user data, funkcja biznesowa 1
-def list_jobs():
+@app.post("/jobs/", response_model=schemas.JobPostOut)
+def create_job(data: schemas.CreateJob, db: Session = Depends(get_db), api_key = Security(oauth2.get_api_key)):
+
+    currentCompany = db.query(models.Company).filter(models.Company.company_name == data.company_name).first()
+
+    try:
+        location = models.JobLocation(
+            address=data.address,
+            city=data.city,
+            country=data.country,
+            postcode=data.postcode
+        )
+
+        db.add(location)
+        db.commit()
+        db.refresh(location)
+
+        post = models.JobPost(
+            posted_by_id=currentCompany.id,
+            job_type_id=data.job_type_id,
+            job_location_id=location.id,
+            job_description=data.job_description,
+            is_active=True
+        )
+        db.add(post)
+        db.commit()
+        db.refresh(post)
+    
+        post_skill = models.JobSkill(
+            skill_id=data.skill_id,
+            job_post_id=post.id,
+            skill_level=data.skill_level
+        )
+        db.add(post_skill)
+        db.commit()
+        db.refresh(post_skill)
+    
+    except IntegrityError:
+        raise HTTPException(status_code=403, detail="Try different data")
+
+    return post
+
+
+@app.get("/jobs/") #list all active jobs
+def list_jobs(db: Session = Depends(get_db)):
+    return crud.list_jobs(db=db)
+
+
+@app.get("/jobs/{username}/") #avaliable jobs based on user data, funkcja biznesowa 1
+def list_taken_jobs(username: str):
     return {}
 
 
@@ -132,8 +191,8 @@ def take_jobs(job_id: int):
     return {}
 
 
-@app.get("/jobs/{username}/")
-def list_taken_jobs(username: str):
+@app.post("/jobs/skill/")
+def create_skill():
     return {}
 
 

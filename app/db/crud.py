@@ -2,7 +2,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from . import models, schemas
 from passlib.context import CryptContext
-from psycopg2.errors import UniqueViolation
+# from psycopg2.errors import UniqueViolation
+import os
+import hashlib
+
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -59,6 +62,16 @@ def create_user(db: Session, user: schemas.UserIn):
     return db_user
 
 
+def generate_api_key():
+    """
+    Generate a random API key based on `os.urandom`
+
+    :return: the generated API key
+    :rtype: str
+    """
+    return hashlib.sha256(os.urandom(64)).hexdigest()
+
+
 def create_company(db: Session, company: schemas.CompanyCreate):
     new_company = models.Company(company_name=company.company_name,
                                  company_description=company.company_description,
@@ -68,9 +81,18 @@ def create_company(db: Session, company: schemas.CompanyCreate):
     db.add(new_company)
     db.commit()
     db.refresh(new_company)
+
+    apiKey = models.ApiKey(company_id = new_company.id,
+                           api_key = generate_api_key())
+    db.add(apiKey)
+    db.commit()
+    db.refresh(apiKey)
+
     return new_company
 
 
 def count_company_employees(db: Session):
     return db.query(models.Employee.company, func.count(models.Employee.user_id)).group_by(models.Employee.company)
- 
+
+def list_jobs(db: Session):
+    return db.query(models.JobPost).filter(models.JobPost.is_active == True).all()

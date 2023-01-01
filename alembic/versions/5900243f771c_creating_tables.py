@@ -1,8 +1,8 @@
-"""refresh
+"""creating tables
 
-Revision ID: 57aee4ab5502
+Revision ID: 5900243f771c
 Revises: 
-Create Date: 2022-12-29 18:27:46.363306
+Create Date: 2023-01-01 16:42:53.217134
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '57aee4ab5502'
+revision = '5900243f771c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,7 +24,8 @@ def upgrade() -> None:
     sa.Column('company_description', sa.String(), nullable=True),
     sa.Column('establishment_date', sa.Date(), nullable=True),
     sa.Column('website', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('company_name')
     )
     op.create_index(op.f('ix_company_id'), 'company', ['id'], unique=False)
     op.create_table('job_location',
@@ -63,13 +64,24 @@ def upgrade() -> None:
     op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
     op.create_index(op.f('ix_users_password'), 'users', ['password'], unique=False)
     op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=False)
+    op.create_table('api_keys',
+    sa.Column('company_id', sa.Integer(), nullable=False),
+    sa.Column('api_key', sa.String(length=64), nullable=True),
+    sa.ForeignKeyConstraint(['company_id'], ['company.id'], ),
+    sa.PrimaryKeyConstraint('company_id')
+    )
+    op.create_index(op.f('ix_api_keys_api_key'), 'api_keys', ['api_key'], unique=True)
+    op.create_index(op.f('ix_api_keys_company_id'), 'api_keys', ['company_id'], unique=False)
     op.create_table('employee_profile',
     sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('company', sa.String(), nullable=True),
     sa.Column('salary', sa.Integer(), nullable=True),
     sa.Column('currency', sa.String(), nullable=True),
+    sa.ForeignKeyConstraint(['company'], ['company.company_name'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('user_id')
     )
+    op.create_index(op.f('ix_employee_profile_company'), 'employee_profile', ['company'], unique=False)
     op.create_index(op.f('ix_employee_profile_user_id'), 'employee_profile', ['user_id'], unique=False)
     op.create_table('job_post',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -125,7 +137,11 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_job_post_id'), table_name='job_post')
     op.drop_table('job_post')
     op.drop_index(op.f('ix_employee_profile_user_id'), table_name='employee_profile')
+    op.drop_index(op.f('ix_employee_profile_company'), table_name='employee_profile')
     op.drop_table('employee_profile')
+    op.drop_index(op.f('ix_api_keys_company_id'), table_name='api_keys')
+    op.drop_index(op.f('ix_api_keys_api_key'), table_name='api_keys')
+    op.drop_table('api_keys')
     op.drop_index(op.f('ix_users_username'), table_name='users')
     op.drop_index(op.f('ix_users_password'), table_name='users')
     op.drop_index(op.f('ix_users_id'), table_name='users')
