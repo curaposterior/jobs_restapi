@@ -78,7 +78,6 @@ def get_api_key(db: Session = Depends(get_db), api_key_query: str = Depends(api_
         detail="Invalid or missing API Key",
     )
 
-    # company = db.query(models.Company).filter(models.Company.company_name == company_name).first()
     apiKey = db.query(models.ApiKey).filter(models.ApiKey.api_key == (api_key_query or api_key_header)).first()
 
     if api_key_query == apiKey.api_key:
@@ -91,7 +90,4 @@ def get_api_key(db: Session = Depends(get_db), api_key_query: str = Depends(api_
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or missing API Key",
     )
-
-def check_api_key(api_key: str, company_name: str, db: Session = Depends(get_db)):
-    pass
 

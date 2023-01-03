@@ -30,7 +30,7 @@ class Skill(Base):
     __tablename__ = 'skill'
 
     id = Column(Integer, primary_key=True, index=True)
-    skill_name = Column(String)
+    skill_name = Column(String, unique=True)
 
 
 class EmployeeSkill(Base):
@@ -85,6 +85,8 @@ class JobPost(Base):
     job_description = Column(String)
     created_date = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
     is_active = Column(Boolean)
+    taken_by_id = Column(Integer, default=0)
+    salary = Column(Integer)
 
 
 
@@ -94,9 +96,3 @@ class JobSkill(Base):
     skill_id = Column(Integer, ForeignKey("skill.id"), primary_key=True, index=True)
     job_post_id = Column(Integer, ForeignKey("job_post.id"), primary_key=True, index=True)
     skill_level = Column(Integer)
-
-
-# class JobPostActivity(Base):
-#     __tablename__ = 'job_post_activity'
-
-

@@ -75,12 +75,31 @@ class CreateEmployee(BaseModel):
         orm_mode = True
 
 
+class CreateSkill(BaseModel):
+    skill_name: str
+
+    class Config:
+        orm_mode = True
+
+class SkillOut(CreateSkill):
+    id: int
+
+
 class EmployeeProfile(BaseModel):
     name: str
     surname: str
     email: EmailStr
     salary: int
     company: str
+
+    class Config:
+        orm_mode = True
+
+
+class EmployeeSkills(BaseModel):
+    user_id: int
+    skill_id: int
+    skill_level: int
 
     class Config:
         orm_mode = True
@@ -96,6 +115,14 @@ class CreateJob(BaseModel):
     job_description: str
     skill_id: int
     skill_level: int
+    salary: int
+
+    class Config:
+        orm_mode = True
+
+
+class TakeJob(BaseModel):
+    username: str
 
     class Config:
         orm_mode = True
@@ -105,6 +132,22 @@ class JobPostOut(BaseModel):
     id: int
     created_date: datetime.date
     is_active: bool
+
+    class Config:
+        orm_mode = True
+
+
+class JobCompleteOut(BaseModel):
+    id: int
+    completed_date: datetime.date
+    is_active: bool
+
+    class Config:
+        orm_mode = True
+
+
+class JobComplete(BaseModel):
+    job_id: int
 
     class Config:
         orm_mode = True
