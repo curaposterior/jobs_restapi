@@ -20,7 +20,7 @@ class User(Base):
 class Employee(Base):
     __tablename__ = 'employee_profile'
 
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True)
     company = Column(String, ForeignKey("company.company_name"), index=True)
     salary = Column(Integer)
     currency = Column(String)
@@ -96,3 +96,13 @@ class JobSkill(Base):
     skill_id = Column(Integer, ForeignKey("skill.id"), primary_key=True, index=True)
     job_post_id = Column(Integer, ForeignKey("job_post.id"), primary_key=True, index=True)
     skill_level = Column(Integer)
+
+
+class UserAudit(Base):
+    __tablename__ = 'user_audit'
+
+    stamp = Column(DateTime, primary_key=True)
+    operation = Column(String(length=1))
+    userid = Column(Integer)
+    username = Column(String)
+    email = Column(String)

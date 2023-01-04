@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from . import models, schemas
 from passlib.context import CryptContext
-# from psycopg2.errors import UniqueViolation
+
 import os
 import hashlib
 

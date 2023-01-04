@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
+from fastapi import status
 
 from app.db import crud, models, schemas
 from app.db.database import get_db
@@ -28,6 +29,10 @@ def count_employees(db: Session = Depends(get_db)):
 @router.get("/employee/{employee_id}", response_model=schemas.EmployeeProfile)
 def get_profile(employee_id: int, db: Session = Depends(get_db)):
     user = crud.get_user(db=db, user_id=employee_id)
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Employee doesn't exist")
+
     employee = db.query(models.Employee).filter(models.Employee.user_id == employee_id).first()
     response = {
         "name": user.name,

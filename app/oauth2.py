@@ -49,19 +49,6 @@ def verify_access_token(token: str):
     return token_data
 
 
-# def verify_access_token_company(token: str):
-#     try:
-#         payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
-#         company_name = payload.get("company_name")
-#         if company_name is None:
-#             raise credentials_exception
-#         token_data = schemas.TokenDataCompany(company_name=company_name)
-#     except JWTError:
-#         raise credentials_exception
-    
-#     return token_data
-
-
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     token = verify_access_token(token)
 
