@@ -94,5 +94,5 @@ def create_company(db: Session, company: schemas.CompanyCreate):
 def count_company_employees(db: Session):
     return db.query(models.Employee.company, func.count(models.Employee.user_id)).group_by(models.Employee.company)
 
-def list_jobs(db: Session):
-    return db.query(models.JobPost).filter(models.JobPost.is_active == True).all()
+def list_jobs(db: Session, skip: int, limit: int):
+    return db.query(models.JobPost).filter(models.JobPost.is_active == True).offset(skip).limit(limit).all()

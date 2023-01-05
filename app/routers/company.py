@@ -45,7 +45,7 @@ def get_profile(employee_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/employee/skill", response_model=schemas.EmployeeSkills)
-def create_employee_skill(data: schemas.EmployeeSkills, db: Session = Depends(get_db)):
+def create_employee_skill(data: schemas.EmployeeSkills, db: Session = Depends(get_db), api_key = Depends(oauth2.get_api_key)):
     try:
         skill = models.EmployeeSkill(
             user_id=data.user_id,

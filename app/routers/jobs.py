@@ -56,11 +56,11 @@ def create_job(data: schemas.CreateJob, db: Session = Depends(get_db), api_key =
 
 
 @router.get("/jobs/") #list all active jobs
-def list_jobs(db: Session = Depends(get_db)):
-    return crud.list_jobs(db=db)
+def list_jobs(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
+    return crud.list_jobs(db=db, skip=skip, limit=limit)
 
 
-@router.get("/jobs/{username}/")
+@router.get("/jobs/{username}/") #dodac schemat
 def list_jobs_personal(username: str, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)): #curr user add
     query_user = db.query(models.User).filter(models.User.username == username)
     db_user = query_user.first()
@@ -71,8 +71,9 @@ def list_jobs_personal(username: str, db: Session = Depends(get_db), current_use
     if db_user.username != current_user.username:
         raise HTTPException(status_code=403, detail="Unauthorized to perform this action.")
     
+    #dokleic lokalizacje
     skill_level = db.query(models.EmployeeSkill).filter(models.EmployeeSkill.user_id == db_user.id).first() #skill
-    jobs = db.query(models.JobPost).join(models.JobSkill).filter(models.JobSkill.skill_id == skill_level.skill_id and models.JobSkill.skill_level <= skill_level.skill_level and models.JobPost.taken_by_id == 0)
+    jobs = db.query(models.JobPost).join(models.JobSkill).filter(models.JobSkill.skill_id == skill_level.skill_id and models.JobSkill.skill_level <= skill_level.skill_level and models.JobPost.taken_by_id == 0).all()
     return jobs
 
 
