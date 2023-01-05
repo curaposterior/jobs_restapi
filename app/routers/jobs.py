@@ -60,7 +60,7 @@ def list_jobs(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     return crud.list_jobs(db=db, skip=skip, limit=limit)
 
 
-@router.get("/jobs/{username}/") #dodac schemat
+@router.get("/jobs/{username}/") #dodac schemat, dodac filtrowanie po firmie
 def list_jobs_personal(username: str, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)): #curr user add
     query_user = db.query(models.User).filter(models.User.username == username)
     db_user = query_user.first()
@@ -116,6 +116,12 @@ def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db),
     db.commit()
 
     return job
+
+
+@router.get("/jobs/location/{location_id}")
+def get_job_location(location_id: int, db: Session = Depends(get_db)):
+    location = db.query(models.JobLocation).filter(models.JobLocation.id == location_id).first()
+    return location
 
 
 @router.post("/jobs/create/skill/", response_model=schemas.SkillOut)
