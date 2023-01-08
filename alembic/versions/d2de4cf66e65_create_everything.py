@@ -1,8 +1,8 @@
-"""creating tables
+"""create everything
 
-Revision ID: 5900243f771c
+Revision ID: d2de4cf66e65
 Revises: 
-Create Date: 2023-01-01 16:42:53.217134
+Create Date: 2023-01-08 15:40:30.493525
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5900243f771c'
+revision = 'd2de4cf66e65'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -46,9 +46,18 @@ def upgrade() -> None:
     op.create_table('skill',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('skill_name', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('skill_name')
     )
     op.create_index(op.f('ix_skill_id'), 'skill', ['id'], unique=False)
+    op.create_table('user_audit',
+    sa.Column('stamp', sa.DateTime(), nullable=False),
+    sa.Column('operation', sa.String(length=1), nullable=True),
+    sa.Column('userid', sa.Integer(), nullable=True),
+    sa.Column('username', sa.String(), nullable=True),
+    sa.Column('email', sa.String(), nullable=True),
+    sa.PrimaryKeyConstraint('stamp')
+    )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=True),
@@ -78,7 +87,7 @@ def upgrade() -> None:
     sa.Column('salary', sa.Integer(), nullable=True),
     sa.Column('currency', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['company'], ['company.company_name'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('user_id')
     )
     op.create_index(op.f('ix_employee_profile_company'), 'employee_profile', ['company'], unique=False)
@@ -91,6 +100,8 @@ def upgrade() -> None:
     sa.Column('job_description', sa.String(), nullable=True),
     sa.Column('created_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
+    sa.Column('taken_by_id', sa.Integer(), nullable=True),
+    sa.Column('salary', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['job_location_id'], ['job_location.id'], ),
     sa.ForeignKeyConstraint(['job_type_id'], ['job_type.id'], ),
     sa.ForeignKeyConstraint(['posted_by_id'], ['company.id'], ),
@@ -147,6 +158,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_table('user_audit')
     op.drop_index(op.f('ix_skill_id'), table_name='skill')
     op.drop_table('skill')
     op.drop_index(op.f('ix_job_type_id'), table_name='job_type')

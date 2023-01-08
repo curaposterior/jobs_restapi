@@ -9,8 +9,11 @@ import app.oauth2 as oauth2
 router = APIRouter()
 
 
-@router.post("/users/login", response_model=schemas.Token)
+@router.post("/login", response_model=schemas.Token)
 async def login(user: schemas.UserAuthenticate, db: Session = Depends(get_db)):
+    """
+    Returns JWT token after a successful validation of user credentials
+    """
     user_to_auth = crud.get_user_by_username(db=db, username=user.username)
     
     if not user_to_auth:

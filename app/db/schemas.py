@@ -55,6 +55,18 @@ class UserChange(BaseModel):
         orm_mode = True
 
 
+class UserUpdate(BaseModel):
+    username: Optional[str]
+    name: Optional[str]
+    surname: Optional[str]
+    address: Optional[str]
+    email: Optional[EmailStr]
+    company: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+
 class CompanyCreate(BaseModel):
     company_name: str
     company_description: str

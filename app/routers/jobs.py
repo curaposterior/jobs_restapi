@@ -13,7 +13,9 @@ router = APIRouter()
 
 @router.post("/jobs/", response_model=schemas.JobPostOut)
 def create_job(data: schemas.CreateJob, db: Session = Depends(get_db), api_key = Security(oauth2.get_api_key)):
-
+    """
+    Function that creates job post
+    """
     currentCompany = db.query(models.Company).filter(models.Company.company_name == data.company_name).first()
 
     try:
@@ -55,13 +57,21 @@ def create_job(data: schemas.CreateJob, db: Session = Depends(get_db), api_key =
     return post
 
 
-@router.get("/jobs/") #list all active jobs
+@router.get("/jobs/")
 def list_jobs(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
+    """
+    List all active job posts
+    :skip -> specify how many job posts you want to skip
+    :limit -> specify output limit
+    """
     return crud.list_jobs(db=db, skip=skip, limit=limit)
 
 
-@router.get("/jobs/{username}/") #dodac schemat, dodac filtrowanie po firmie
+@router.get("/jobs/{username}/")
 def list_jobs_personal(username: str, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)): #curr user add
+    """
+    List jobs that the specified user can take (requires authentication token)
+    """
     query_user = db.query(models.User).filter(models.User.username == username)
     db_user = query_user.first()
 
@@ -71,22 +81,25 @@ def list_jobs_personal(username: str, db: Session = Depends(get_db), current_use
     if db_user.username != current_user.username:
         raise HTTPException(status_code=403, detail="Unauthorized to perform this action.")
     
-    #dokleic lokalizacje
-    skill_level = db.query(models.EmployeeSkill).filter(models.EmployeeSkill.user_id == db_user.id).first() #skill
-    jobs = db.query(models.JobPost).join(models.JobSkill).filter(models.JobSkill.skill_id == skill_level.skill_id and models.JobSkill.skill_level <= skill_level.skill_level and models.JobPost.taken_by_id == 0).all()
+    skill_level = db.query(models.EmployeeSkill).filter(models.EmployeeSkill.user_id == db_user.id).first()
+    jobs = db.query(models.JobPost).join(models.JobSkill).join(
+        models.Company
+        ).filter(models.JobSkill.skill_id == skill_level.skill_id and models.JobSkill.skill_level <= skill_level.skill_level and models.JobPost.taken_by_id == 0 
+        and models.Company.id == models.JobPost.taken_by_id).all()
     return jobs
 
 
-@router.post("/jobs/{job_id}/", response_model=schemas.JobPostOut) #funkcja biznesowa 2, musi sprawdzic duzo rzeczy
+@router.post("/jobs/{job_id}/", response_model=schemas.JobPostOut)
 def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
+    """
+    Take jobs (authentication token is required to verify the user)
+    """
     query_user = db.query(models.User).filter(models.User.username == data.username) #zoba czy user istnieje ni
     db_user = query_user.first()
 
     if db_user == None:
         raise HTTPException(status_code=404, detail=f"Try different data.")
 
-    # if db_user.username != current_user.username:
-    #     raise HTTPException(status_code=403, detail="Unauthorized to perform this action.")
 
     job_query = db.query(models.JobPost).filter(models.JobPost.id == job_id)
     job = job_query.first()
@@ -96,9 +109,7 @@ def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db),
     
     #gather user data
     jobSkillRequired = db.query(models.JobSkill).filter(job.id == models.JobSkill.job_post_id).first()
-    # jobType = db.query(models.JobType).filter(job.job_type_id == models.JobType.id).first() #check job type
     userSkillLevel = db.query(models.EmployeeSkill).filter(models.EmployeeSkill.user_id == db_user.id).first() #check user skilil level
-    # skillName = db.query(models.Skill).filter(models.Skill.id == userSkillLevel.skill_id).first() #check required skill
     employeeProfile = db.query(models.Employee).filter(models.Employee.user_id == db_user.id).first() #check company
     companyName = db.query(models.Company).filter(models.Company.company_name == employeeProfile.company).first()
 
@@ -120,12 +131,20 @@ def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db),
 
 @router.get("/jobs/location/{location_id}")
 def get_job_location(location_id: int, db: Session = Depends(get_db)):
+    """
+    Check the location of a job.
+
+    :location_id -> location id that is in the job post
+    """
     location = db.query(models.JobLocation).filter(models.JobLocation.id == location_id).first()
     return location
 
 
 @router.post("/jobs/create/skill/", response_model=schemas.SkillOut)
 def create_skill(data: schemas.CreateSkill, db: Session = Depends(get_db), api_key: str = Security(oauth2.get_api_key)):
+    """
+    Create a specific skill. Only companies with their API Key can create a skill.
+    """
     try:
         skill = models.Skill(
             skill_name = data.skill_name
@@ -140,6 +159,9 @@ def create_skill(data: schemas.CreateSkill, db: Session = Depends(get_db), api_k
 
 @router.post("/jobs/final/complete/", response_model=schemas.JobCompleteOut)
 def finish_job(data: schemas.JobComplete, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
+    """
+    Complete a job (authentication token is required)
+    """
     try:
         userQuery = db.query(models.Employee).filter(models.Employee.user_id == current_user.id)
         jobPostQuery = db.query(models.JobPost).filter(models.JobPost.id == data.job_id)

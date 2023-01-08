@@ -12,6 +12,9 @@ router = APIRouter()
 
 @router.post("/company/", response_model=schemas.CompanyCreate)
 def create_company(company: schemas.CompanyCreate, db: Session =  Depends(get_db)):
+    """
+    Creates a company
+    """
     db_company = db.query(models.Company).filter(models.Company.company_name == company.company_name).first()
 
     if db_company is not None:
@@ -23,11 +26,17 @@ def create_company(company: schemas.CompanyCreate, db: Session =  Depends(get_db
 
 @router.get("/company/employees")
 def count_employees(db: Session = Depends(get_db)):
+    """
+    Count employees by company+
+    """
     return crud.count_company_employees(db=db)
 
 
 @router.get("/employee/{employee_id}", response_model=schemas.EmployeeProfile)
 def get_profile(employee_id: int, db: Session = Depends(get_db)):
+    """
+    Returns employee profile
+    """
     user = crud.get_user(db=db, user_id=employee_id)
 
     if user is None:
@@ -46,6 +55,9 @@ def get_profile(employee_id: int, db: Session = Depends(get_db)):
 
 @router.post("/employee/skill", response_model=schemas.EmployeeSkills)
 def create_employee_skill(data: schemas.EmployeeSkills, db: Session = Depends(get_db), api_key = Depends(oauth2.get_api_key)):
+    """
+    Add a skill to a specific employee. This can only be done using API Key.
+    """
     try:
         skill = models.EmployeeSkill(
             user_id=data.user_id,

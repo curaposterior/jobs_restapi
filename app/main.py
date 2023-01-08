@@ -21,8 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#routes
-
 @app.get("/")
 async def index():
     return {"response": "try different routes"}

@@ -43,7 +43,7 @@ def create_user(db: Session, user: schemas.UserIn):
                           password=hashed_password,
                           email=user.email,
                           is_active=True
-                          )
+                          ) #**user.dict()
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

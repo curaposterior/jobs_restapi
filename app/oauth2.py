@@ -58,7 +58,9 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 
 def get_api_key(db: Session = Depends(get_db), api_key_query: str = Depends(api_key_query), api_key_header: str = Depends(api_key_header)):
-    """Validate api key with a simple lookup to the database"""
+    """
+    Validate api key with a simple lookup to the database
+    """
     if api_key_header == None and api_key_query == None:
         raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
