@@ -28,12 +28,12 @@ def create_company(company: schemas.CompanyCreate, db: Session =  Depends(get_db
 @router.get("/company/employees")
 def count_employees(db: Session = Depends(get_db)):
     """
-    Count employees by company+
+    Count employees by company
     """
-    return crud.count_company_employees(db=db)
+    return crud.count_company_employees(db=db) #business func 1
 
 
-@router.get("/employee/{employee_id}", response_model=schemas.EmployeeProfile)
+@router.get("/company/employee/{employee_id}", response_model=schemas.EmployeeProfile)
 def get_profile(employee_id: int, db: Session = Depends(get_db)):
     """
     Returns employee profile
@@ -73,26 +73,11 @@ def create_employee_skill(data: schemas.EmployeeSkills, db: Session = Depends(ge
     return skill
 
 
-@router.get("/company/stats/avg_salary")
+@router.get("/company/stats/avg_salary") #business func 2
 def get_average_salary_by_company(db: Session = Depends(get_db)):
 
     q = db.query(models.Company.company_name, func.avg(models.Employee.salary).label("avg_salary")
     ).join(models.Employee, models.Employee.company == models.Company.company_name
-    ).group_by(models.Company.company_name
-    ).all()
+    ).group_by(models.Company.company_name).all()
 
     return q
-
-
-#fix that
-# @router.get("/company/{company_id}/avg_salary")
-# def get_average_salary_company_id(company_id: int, db: Session = Depends(get_db)):
-#     try:
-#         q = db.query(models.Company.company_name, func.avg(models.Employee.salary).label("avg_salary")
-#         ).join(models.Employee, models.Employee.company == models.Company.company_name
-#         ).filter(models.Company.id == company_id
-#         ).group_by(models.Company.company_name
-#         ).all()
-#         return q
-#     except IntegrityError:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Company with id={company_id} does not exist")

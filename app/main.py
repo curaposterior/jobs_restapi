@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from app.routers import auth, company, jobs, users
 
-
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+
+app = FastAPI(
+    title="Job management API",
+    version="0.0.1"
+)
 
 app.include_router(auth.router)
 app.include_router(company.router)
