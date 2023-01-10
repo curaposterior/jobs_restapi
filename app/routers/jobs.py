@@ -62,7 +62,7 @@ def create_job(data: schemas.CreateJob, db: Session = Depends(get_db), api_key =
         db.refresh(post_skill)
     
     except IntegrityError:
-        raise HTTPException(status_code=403, detail="Try different data")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Try different data")
 
     return post
 
@@ -86,10 +86,10 @@ def list_jobs_personal(username: str, db: Session = Depends(get_db), current_use
     db_user = query_user.first()
 
     if db_user == None:
-        raise HTTPException(status_code=404, detail=f"Couldn't find this user")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Couldn't find this user")
 
     if db_user.username != current_user.username:
-        raise HTTPException(status_code=403, detail="Unauthorized to perform this action.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized to perform this action.")
     
     skill_level = db.query(models.EmployeeSkill).filter(models.EmployeeSkill.user_id == db_user.id).first()
     
@@ -111,14 +111,14 @@ def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db),
     db_user = query_user.first()
 
     if db_user == None:
-        raise HTTPException(status_code=404, detail=f"Try different data.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Try different data.")
 
 
     job_query = db.query(models.JobPost).filter(models.JobPost.id == job_id)
     job = job_query.first()
 
     if job.taken_by_id != 0 or job.is_active != True:
-        raise HTTPException(status_code=403, detail="Unable to take this job.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unable to take this job.")
     
     #gather user data
     jobSkillRequired = db.query(models.JobSkill).filter(job.id == models.JobSkill.job_post_id).first()
@@ -127,13 +127,13 @@ def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db),
     companyName = db.query(models.Company).filter(models.Company.company_name == employeeProfile.company).first()
 
     if (companyName.id != job.posted_by_id):
-        raise HTTPException(status_code=403, detail="You don't work for this company.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't work for this company.")
 
     if (jobSkillRequired.skill_id != userSkillLevel.skill_id):
-        raise HTTPException(status_code=403, detail="You don't have required skill to take this job.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have required skill to take this job.")
 
     if (jobSkillRequired.skill_level > userSkillLevel.skill_level):
-        raise HTTPException(status_code=403, detail="You don't have enough experience to take this job.")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have enough experience to take this job.")
     
 
     job_query.update({"taken_by_id": db_user.id})
@@ -194,5 +194,5 @@ def finish_job(data: schemas.JobComplete, db: Session = Depends(get_db), current
     jobPostQuery.update({"is_active": False})
     userQuery.update({"salary": models.Employee.salary + jobPost.salary})
     db.commit()
-    
+
     return {"id": jobPost.id, "completed_date": datetime.datetime.now(), "is_active": jobPost.is_active}

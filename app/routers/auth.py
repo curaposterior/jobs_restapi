@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, status
 from sqlalchemy.orm import Session
 
 from app.db import crud, schemas
@@ -17,11 +17,11 @@ async def login(user: schemas.UserAuthenticate, db: Session = Depends(get_db)):
     user_to_auth = crud.get_user_by_username(db=db, username=user.username)
     
     if not user_to_auth:
-        raise HTTPException(status_code=404, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid credentials")
     
     if not crud.verify_password(plain_password=user.password, 
                             hashed_password=user_to_auth.password):
-        raise HTTPException(status_code=403, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
     
     access_token = oauth2.create_access_token(data={"username": user.username})
     

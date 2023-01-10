@@ -19,7 +19,7 @@ def create_company(company: schemas.CompanyCreate, db: Session =  Depends(get_db
     db_company = db.query(models.Company).filter(models.Company.company_name == company.company_name).first()
 
     if db_company is not None:
-        raise HTTPException(status_code=403, detail=f"Company with name '{company.company_name}' is already registered")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Company with name '{company.company_name}' is already registered")
 
     new = crud.create_company(db=db, company=company)
     return new
