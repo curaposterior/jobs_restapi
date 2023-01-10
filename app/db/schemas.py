@@ -83,7 +83,7 @@ class CreateEmployee(BaseModel):
     currency: str
     company: str
 
-    class Config: #why is that necessary?
+    class Config:
         orm_mode = True
 
 
@@ -160,6 +160,13 @@ class JobCompleteOut(BaseModel):
 
 class JobComplete(BaseModel):
     job_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class CreateJobType(BaseModel):
+    job_type: str
 
     class Config:
         orm_mode = True

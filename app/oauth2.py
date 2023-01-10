@@ -61,19 +61,25 @@ def get_api_key(db: Session = Depends(get_db), api_key_query: str = Depends(api_
     """
     Validate api key with a simple lookup to the database
     """
-    if api_key_header == None and api_key_query == None:
+    try:
+        if api_key_header == None and api_key_query == None:
+            raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API Key",
+        )
+
+        apiKey = db.query(models.ApiKey).filter(models.ApiKey.api_key == (api_key_query or api_key_header)).first()
+
+        if api_key_query == apiKey.api_key:
+            return api_key_query
+
+        if api_key_header == apiKey.api_key:
+            return api_key_header    
+    except AttributeError:
         raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or missing API Key",
     )
-
-    apiKey = db.query(models.ApiKey).filter(models.ApiKey.api_key == (api_key_query or api_key_header)).first()
-
-    if api_key_query == apiKey.api_key:
-        return api_key_query
-
-    if api_key_header == apiKey.api_key:
-        return api_key_header    
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

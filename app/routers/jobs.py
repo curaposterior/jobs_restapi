@@ -11,6 +11,16 @@ import datetime
 router = APIRouter()
 
 
+@router.post("/jobs/type/create/")
+def create_job_type(data: schemas.CreateJobType, db: Session = Depends(get_db), api_key = Security(oauth2.get_api_key)):
+    jobType = models.JobType(
+        job_type=data.job_type
+    )
+    db.add(jobType)
+    db.commit()
+    return {"response": f"created job type: {data.job_type}"}
+
+
 @router.post("/jobs/", response_model=schemas.JobPostOut)
 def create_job(data: schemas.CreateJob, db: Session = Depends(get_db), api_key = Security(oauth2.get_api_key)):
     """
@@ -67,7 +77,7 @@ def list_jobs(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     return crud.list_jobs(db=db, skip=skip, limit=limit)
 
 
-@router.get("/jobs/{username}/")
+@router.get("/jobs/list/{username}/")
 def list_jobs_personal(username: str, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)): #curr user add
     """
     List jobs that the specified user can take (requires authentication token)
@@ -82,14 +92,17 @@ def list_jobs_personal(username: str, db: Session = Depends(get_db), current_use
         raise HTTPException(status_code=403, detail="Unauthorized to perform this action.")
     
     skill_level = db.query(models.EmployeeSkill).filter(models.EmployeeSkill.user_id == db_user.id).first()
+    
     jobs = db.query(models.JobPost).join(models.JobSkill).join(
-        models.Company
-        ).filter(models.JobSkill.skill_id == skill_level.skill_id and models.JobSkill.skill_level <= skill_level.skill_level and models.JobPost.taken_by_id == 0 
+        models.Company).filter(models.JobSkill.skill_id == skill_level.skill_id 
+        and models.JobSkill.skill_level <= skill_level.skill_level 
+        and models.JobPost.taken_by_id == 0 
         and models.Company.id == models.JobPost.taken_by_id).all()
+    
     return jobs
 
 
-@router.post("/jobs/{job_id}/", response_model=schemas.JobPostOut)
+@router.post("/jobs/take/{job_id}/", response_model=schemas.JobPostOut)
 def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
     """
     Take jobs (authentication token is required to verify the user)
@@ -157,7 +170,12 @@ def create_skill(data: schemas.CreateSkill, db: Session = Depends(get_db), api_k
     return skill
 
 
-@router.post("/jobs/final/complete/", response_model=schemas.JobCompleteOut)
+@router.get("/jobs/skills/")
+def list_all_skills(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
+    return db.query(models.Skill).offset(skip).limit(limit).all()
+
+
+@router.post("/jobs/complete/", response_model=schemas.JobCompleteOut)
 def finish_job(data: schemas.JobComplete, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_user)):
     """
     Complete a job (authentication token is required)

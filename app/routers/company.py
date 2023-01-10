@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from fastapi import status
 
 from app.db import crud, models, schemas
@@ -68,5 +69,30 @@ def create_employee_skill(data: schemas.EmployeeSkills, db: Session = Depends(ge
         db.commit()
         db.refresh(skill)
     except IntegrityError:
-        raise HTTPException(status_code=403, detail="Try different data.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Try different data.")
     return skill
+
+
+@router.get("/company/stats/avg_salary")
+def get_average_salary_by_company(db: Session = Depends(get_db)):
+
+    q = db.query(models.Company.company_name, func.avg(models.Employee.salary).label("avg_salary")
+    ).join(models.Employee, models.Employee.company == models.Company.company_name
+    ).group_by(models.Company.company_name
+    ).all()
+
+    return q
+
+
+#fix that
+# @router.get("/company/{company_id}/avg_salary")
+# def get_average_salary_company_id(company_id: int, db: Session = Depends(get_db)):
+#     try:
+#         q = db.query(models.Company.company_name, func.avg(models.Employee.salary).label("avg_salary")
+#         ).join(models.Employee, models.Employee.company == models.Company.company_name
+#         ).filter(models.Company.id == company_id
+#         ).group_by(models.Company.company_name
+#         ).all()
+#         return q
+#     except IntegrityError:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Company with id={company_id} does not exist")
