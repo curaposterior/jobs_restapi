@@ -93,8 +93,8 @@ def list_jobs_personal(username: str, db: Session = Depends(get_db), current_use
     
     skill_level = db.query(models.EmployeeSkill).filter(models.EmployeeSkill.user_id == db_user.id).first()
     
-    jobs = db.query(models.JobPost, models.Company, models.JobSkill).join(models.JobSkill).join(
-        models.Company).filter(models.JobSkill.skill_id == skill_level.skill_id 
+    jobs = db.query(models.JobPost, models.JobLocation).join(models.JobSkill).join(
+        models.Company).outerjoin(models.JobLocation).filter(models.JobSkill.skill_id == skill_level.skill_id 
         and models.JobSkill.skill_level <= skill_level.skill_level 
         and models.JobPost.taken_by_id == 0 
         and models.Company.id == models.JobPost.taken_by_id).all() #business func 3
@@ -116,6 +116,9 @@ def take_jobs(job_id: int, data: schemas.TakeJob, db: Session = Depends(get_db),
 
     job_query = db.query(models.JobPost).filter(models.JobPost.id == job_id)
     job = job_query.first()
+
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job post doesn't exist")
 
     if job.taken_by_id != 0 or job.is_active != True:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unable to take this job.")

@@ -93,8 +93,8 @@ class JobPost(Base):
 class JobSkill(Base):
     __tablename__ = 'job_post_skill'
 
-    skill_id = Column(Integer, ForeignKey("skill.id"), primary_key=True, index=True)
-    job_post_id = Column(Integer, ForeignKey("job_post.id"), primary_key=True, index=True)
+    skill_id = Column(Integer, ForeignKey("skill.id", ondelete="CASCADE"), primary_key=True, index=True)
+    job_post_id = Column(Integer, ForeignKey("job_post.id", ondelete="CASCADE"), primary_key=True, index=True)
     skill_level = Column(Integer)
 
 

@@ -170,3 +170,22 @@ class CreateJobType(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class JobsLocation(BaseModel):
+    address: str
+    city: str
+    country: str
+    postcode: str
+
+
+class JobPostsPersonalOut(BaseModel):
+    id: int
+    created_date: datetime.date
+    taken_by_id: int
+    job_description: str
+    job_type_id: int
+    posted_by_id: int
+    is_active: bool
+    salary: int
+    # JobLocation: JobsLocation

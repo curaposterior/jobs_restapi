@@ -48,8 +48,6 @@ def create_user(db: Session, user: schemas.UserIn):
     db.commit()
     db.refresh(db_user)
 
-    #check if company is valid
-
     profile = models.Employee(user_id = db_user.id,
         salary = 0,
         currency = "PLN",
@@ -93,6 +91,7 @@ def create_company(db: Session, company: schemas.CompanyCreate):
 
 def count_company_employees(db: Session):
     return db.query(models.Employee.company, func.count(models.Employee.user_id)).group_by(models.Employee.company)
+
 
 def list_jobs(db: Session, skip: int, limit: int):
     return db.query(models.JobPost).filter(models.JobPost.is_active == True).offset(skip).limit(limit).all()

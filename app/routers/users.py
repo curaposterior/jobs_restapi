@@ -18,11 +18,16 @@ async def create_user(user: schemas.UserIn, db: Session = Depends(get_db)):
     """
     db_user = crud.get_user_by_username(db, username=user.username)
     if db_user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="try different username")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Try different username")
+    
+    company_check = db.query(models.Company).filter(user.company == models.Company.company_name).first()
+    if company_check is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Company doesn't exist")
+
     try:
         return crud.create_user(db=db, user=user)
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="try different data")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Try different data")
 
 
 @router.get("/users/", response_model=list[schemas.UserOut])
@@ -61,6 +66,7 @@ async def patch_user(user_id: int, user: schemas.UserUpdate, db: Session = Depen
 
     query_user.update(user.dict(exclude_unset=True), synchronize_session=False)
     db.commit()
+
     return query_user.first()
 
 
