@@ -36,7 +36,7 @@ class Skill(Base):
 class EmployeeSkill(Base):
     __tablename__ = 'employee_skills'
 
-    user_id = Column(Integer, ForeignKey("employee_profile.user_id"), primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("employee_profile.user_id", ondelete="CASCADE"), primary_key=True, index=True)
     skill_id = Column(Integer, ForeignKey("skill.id"), primary_key=True, index=True)
     skill_level = Column(Integer)
 

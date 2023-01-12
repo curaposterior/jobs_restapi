@@ -75,7 +75,7 @@ def create_company(db: Session, company: schemas.CompanyCreate):
                                  company_description=company.company_description,
                                  establishment_date=company.establishment_date,
                                  website=company.website
-                                 )
+    )
     db.add(new_company)
     db.commit()
     db.refresh(new_company)

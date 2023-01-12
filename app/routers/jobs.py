@@ -62,7 +62,7 @@ def create_job(data: schemas.CreateJob, db: Session = Depends(get_db), api_key =
         db.refresh(post_skill)
     
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Try different data")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Try different data")
 
     return post
 
@@ -97,7 +97,7 @@ def list_jobs_personal(username: str, db: Session = Depends(get_db), current_use
         models.Company).outerjoin(models.JobLocation).filter(models.JobSkill.skill_id == skill_level.skill_id 
         and models.JobSkill.skill_level <= skill_level.skill_level 
         and models.JobPost.taken_by_id == 0 
-        and models.Company.id == models.JobPost.taken_by_id).all() #business func 3
+        and models.Company.id == models.JobPost.taken_by_id).all() #b3
     
     return jobs
 
