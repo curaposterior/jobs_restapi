@@ -1,8 +1,8 @@
-"""create everything
+"""create all tables
 
-Revision ID: d2de4cf66e65
+Revision ID: 524de93c3102
 Revises: 
-Create Date: 2023-01-08 15:40:30.493525
+Create Date: 2023-01-28 15:04:44.453768
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd2de4cf66e65'
+revision = '524de93c3102'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -116,7 +116,7 @@ def upgrade() -> None:
     sa.Column('skill_id', sa.Integer(), nullable=False),
     sa.Column('skill_level', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['skill_id'], ['skill.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['employee_profile.user_id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['employee_profile.user_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('user_id', 'skill_id')
     )
     op.create_index(op.f('ix_employee_skills_skill_id'), 'employee_skills', ['skill_id'], unique=False)
@@ -125,8 +125,8 @@ def upgrade() -> None:
     sa.Column('skill_id', sa.Integer(), nullable=False),
     sa.Column('job_post_id', sa.Integer(), nullable=False),
     sa.Column('skill_level', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['job_post_id'], ['job_post.id'], ),
-    sa.ForeignKeyConstraint(['skill_id'], ['skill.id'], ),
+    sa.ForeignKeyConstraint(['job_post_id'], ['job_post.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['skill_id'], ['skill.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('skill_id', 'job_post_id')
     )
     op.create_index(op.f('ix_job_post_skill_job_post_id'), 'job_post_skill', ['job_post_id'], unique=False)
