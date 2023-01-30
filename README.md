@@ -28,14 +28,14 @@ $ python -m venv venv
 $ source venv/bin/activate 
 
 # Install packages
-$ pip install -r requirements.txt
+(venv) $ pip install -r requirements.txt
 
 # Run the app and the database
-$ docker-compose up --build -d
+(venv) $ docker-compose up --build -d
 
 # After creating and running the containers create tables in database using alembic
 # Make sure that you are in virtual environment
-$ alembic upgrade head
+(venv) $ alembic upgrade head
 ```
 
 
