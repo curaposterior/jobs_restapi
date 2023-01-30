@@ -4,7 +4,7 @@ This is a job management Restful API project for college assignment.
 ## Key Features
 
 * Python FastAPI Framework
-* [Docker](https://www.docker.com/) technology
+* [Docker](https://www.docker.com/)
 * [Alembic](https://alembic.sqlalchemy.org/en/latest/) database migration tool
 * [SQLAlchemy](https://www.sqlalchemy.org/) ORM
 * JWT tokens
