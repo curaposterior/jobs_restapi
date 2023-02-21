@@ -8,7 +8,7 @@ This is a job management Restful API project for college assignment.
 * [Alembic](https://alembic.sqlalchemy.org/en/latest/) database migration tool
 * [SQLAlchemy](https://www.sqlalchemy.org/) ORM
 * JWT tokens
-* Relational databases (PostgreSQL)
+* Relational database (PostgreSQL)
 
 ## How To Use
 
