@@ -1,5 +1,9 @@
 # jobs_restapi
 This is a job management Restful API project for college assignment.
+You can pull an image of this project from Docker Hub using:
+```bash
+docker pull curaposterior/jobs_restapi:jobs_restapi
+```
 
 ## Key Features
 
